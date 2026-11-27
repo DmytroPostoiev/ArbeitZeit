@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  
+  <!-- PWA / iOS Home Screen -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Arbeitszeit">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Arbeitszeit">
+  <meta name="theme-color" content="#0a0f1e">
+  <meta name="msapplication-TileColor" content="#0a0f1e">
+  <meta name="description" content="Arbeitszeit-Erfassung Baden-Württemberg">
+  
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  
+  <title>Arbeitszeit</title>
+  <style>
+    :root {
+      --bg1: #0a0f1e;
+      --bg2: #121a2f;
+      --glass: rgba(255, 255, 255, 0.07);
+      --glass-strong: rgba(255, 255, 255, 0.12);
+      --glass-border: rgba(255, 255, 255, 0.14);
+      --glass-highlight: rgba(255, 255, 255, 0.22);
+      --text: #f0f4ff;
+      --muted: #8b9bb8;
+      --accent: #5eead4;
+      --accent2: #38bdf8;
+      --green: #34d399;
+      --green-bg: rgba(52, 211, 153, 0.15);
+      --red: #f87171;
+      --red-bg: rgba(248, 113, 113, 0.15);
+      --orange: #fbbf24;
+      --purple: #a78bfa;
+      --radius: 20px;
+      --radius-sm: 14px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --blur: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg1);
+      color: var(--text);
+      min-height: 100dvh;
+      padding: calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom));
+      line-height: 1.45;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated gradient background */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(56, 189, 248, 0.25), transparent 50%),
+        radial-gradient(ellipse 60% 40% at 90% 10%, rgba(167, 139, 250, 0.2), transparent 45%),
+        radial-gradient(ellipse 50% 50% at 50% 100%, rgba(52, 211, 153, 0.12), transparent 50%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      z-index: -2;
+    }
+
+    /* Soft floating orbs */
+    body::after {
+      content: "";
+      position: fixed;
+      width: 280px;
+      height: 280px;
+      top: 15%;
+      left: -80px;
+      background: radial-gradient(circle, rgba(94, 234, 212, 0.18), transparent 70%);
+      filter: blur(40px);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: 440px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      text-align: center;
+      margin-bottom: 22px;
+      padding-top: 6px;
+    }
+
+    header h1 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 30%, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-top: 5px;
+      font-weight: 450;
+    }
+
+    /* ===== GLASS CARD ===== */
+    .card {
+      background: var(--glass);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 14px;
+      border: 1px solid var(--glass-border);
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 var(--glass-highlight);
+    }
+
+    .card h2 {
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+
+    .card h2 .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    /* ===== INPUTS ===== */
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 7px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+
+    input[type="time"],
+    input[type="number"] {
+      width: 100%;
+      padding: 15px 14px;
+      font-size: 1.15rem;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-border);
+      background: rgba(0, 0, 0, 0.25);
+      color: var(--text);
+      appearance: none;
+      -webkit-appearance: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(0, 0, 0, 0.35);
+      box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.15);
+    }
+
+    /* ===== BUTTONS (iPhone optimized) ===== */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 54px;
+      padding: 16px 18px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.15s, box-shadow 0.2s;
+      letter-spacing: -0.01em;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent2), #0ea5e9);
+      color: #04111f;
+      box-shadow: 0 6px 20px rgba(14, 165, 233, 0.35);
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, var(--green), #10b981);
+      color: #022c22;
+      box-shadow: 0 6px 20px rgba(52, 211, 153, 0.35);
+      margin-top: 12px;
+    }
+
+    .btn-glass {
+      background: var(--glass-strong);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      color: var(--text);
+      box-shadow: inset 0 1px 0 var(--glass-highlight);
+      margin-top: 10px;
+    }
+
+    .btn-danger {
+      background: var(--red-bg);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: var(--red);
+      font-size: 0.92rem;
+      min-height: 48px;
+      margin-top: 10px;
+    }
+
+    /* Big action buttons group on first screen */
+    .btn-group {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn-group .btn {
+      margin-top: 0;
+    }
+
+    /* ===== HOURS DISPLAY ===== */
+    .hours-display {
+      text-align: center;
+      padding: 22px 14px;
+      background: rgba(0, 0, 0, 0.22);
+      border-radius: var(--radius-sm);
+      margin-top: 16px;
+      border: 1px solid var(--glass-border);
+    }
+
+    .hours-display .value {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      font-variant-numeric: tabular-nums;
+      background: linear-gradient(135deg, #fff, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hours-display .label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: 8px;
+      backdrop-filter: blur(8px);
+    }
+
+    .badge-work {
+      background: rgba(56, 189, 248, 0.15);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .badge-free {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .badge-holiday {
+      background: rgba(167, 139, 250, 0.15);
+      color: var(--purple);
+      border: 1px solid rgba(167, 139, 250, 0.3);
+    }
+
+    /* ===== MONTH NAV ===== */
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .month-nav button {
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      color: var(--text);
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      font-size: 1.25rem;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: transform 0.1s;
+    }
+
+    .month-nav button:active {
+      transform: scale(0.92);
+    }
+
+    .month-nav span {
+      font-weight: 650;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+
+    .summary-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .summary-item {
+      background: rgba(0, 0, 0, 0.22);
+      border-radius: 14px;
+      padding: 12px 6px;
+      text-align: center;
+      border: 1px solid var(--glass-border);
+    }
+
+    .summary-item .num {
+      font-size: 1.2rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .summary-item .lbl {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .plus { color: var(--green); }
+    .minus { color: var(--red); }
+
+    .table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--glass-border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 6px;
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 1px solid var(--glass-border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 10px 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr.weekend td { color: var(--muted); opacity: 0.7; }
+    tr.holiday td { color: var(--purple); }
+    tr.today {
+      background: rgba(94, 234, 212, 0.08);
+    }
+
+    .hours-cell, .delta {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ===== SETTINGS ===== */
+    .settings-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .hint {
+      font-size: 0.74rem;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+
+    /* ===== TABS (glass) ===== */
+    .tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 16px;
+      background: var(--glass);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      padding: 5px;
+      border-radius: 16px;
+      border: 1px solid var(--glass-border);
+      box-shadow: inset 0 1px 0 var(--glass-highlight);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 13px 6px;
+      text-align: center;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      transition: all 0.2s ease;
+      -webkit-user-select: none;
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, rgba(94, 234, 212, 0.25), rgba(56, 189, 248, 0.2));
+      color: var(--text);
+      box-shadow: 0 2px 12px rgba(94, 234, 212, 0.15);
+      border: 1px solid rgba(94, 234, 212, 0.25);
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; animation: fadeIn 0.25s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Entry detail rows */
+    .entry-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .entry-row:last-child { border-bottom: none; }
+
+    .entry-row span:first-child { color: var(--muted); font-size: 0.88rem; }
+    .entry-row strong { font-size: 1rem; }
+
+    footer {
+      text-align: center;
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 22px;
+      opacity: 0.7;
+    }
+
+    /* iPhone landscape / larger phones */
+    @media (min-width: 400px) {
+      .container { max-width: 460px; }
+      .btn { min-height: 56px; }
+    }
+
+    @media (min-width: 480px) {
+      body { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1></h1>
+      <p></p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="heute">Heute</button>
+      <button class="tab" data-tab="monat">Monat</button>
+      <button class="tab" data-tab="einstellungen">Einst.</button>
+    </div>
+
+    <!-- ========== HEUTE ========== -->
+    <div id="panel-heute" class="panel active">
+      <div class="card">
+        <h2><span class="dot"></span> Heute erfassen</h2>
+        <div id="today-status" style="margin-bottom:16px;"></div>
+
+        <label for="startTime">Ankunft (Start)</label>
+        <input type="time" id="startTime" value="02:09">
+
+        <label for="endTime" style="margin-top:14px;">Ende (Gehen)</label>
+        <input type="time" id="endTime">
+
+        <!-- Big glass buttons optimized for iPhone thumb reach -->
+        <div class="btn-group">
+          <button class="btn btn-green" id="btnNow">
+            <span style="font-size:1.2rem">⏹</span> Jetzt gehen
+          </button>
+          <button class="btn btn-primary" id="btnSave">
+            <span style="font-size:1.15rem">✓</span> Speichern
+          </button>
+        </div>
+
+        <div class="hours-display" id="calcBox" style="display:none;">
+          <div class="value" id="calcHours">0:00</div>
+          <div class="label">Arbeitsstunden (Pause abgezogen)</div>
+        </div>
+        <p class="hint" id="calcHint"></p>
+      </div>
+
+      <div class="card" id="todayEntryCard" style="display:none;">
+        <h2><span class="dot" style="background:var(--green)"></span> Heutiger Eintrag</h2>
+        <div id="todayEntry"></div>
+        <button class="btn btn-danger" id="btnDeleteToday">Eintrag löschen</button>
+      </div>
+    </div>
+
+    <!-- ========== MONAT ========== -->
+    <div id="panel-monat" class="panel">
+      <div class="card">
+        <div class="month-nav">
+          <button id="prevMonth" aria-label="Vorheriger Monat">‹</button>
+          <span id="monthLabel">November 2026</span>
+          <button id="nextMonth" aria-label="Nächster Monat">›</button>
+        </div>
+
+        <div class="summary-bar">
+          <div class="summary-item">
+            <div class="num" id="sumHours">0:00</div>
+            <div class="lbl">Gearbeitet</div>
+          </div>
+          <div class="summary-item">
+            <div class="num" id="sumTarget">0:00</div>
+            <div class="lbl">Soll</div>
+          </div>
+          <div class="summary-item">
+            <div class="num" id="sumDelta">0:00</div>
+            <div class="lbl">Saldo</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tag</th>
+                <th>Start</th>
+                <th>Ende</th>
+                <th>Std.</th>
+                <th>+/−</th>
+              </tr>
+            </thead>
+            <tbody id="monthBody"></tbody>
+          </table>
+        </div>
+        <p class="hint">Grün = Überstunden · Rot = Minus · Feiertage &amp; Wochenende zählen nicht zum Soll</p>
+      </div>
+    </div>
+
+    <!-- ========== EINSTELLUNGEN ========== -->
+    <div id="panel-einstellungen" class="panel">
+      <div class="card">
+        <h2><span class="dot"></span> Einstellungen</h2>
+        <div class="settings-grid">
+          <div>
+            <label for="targetHours">Soll-Stunden pro Arbeitstag</label>
+            <input type="number" id="targetHours" min="1" max="12" step="0.5" value="8">
+          </div>
+          <div>
+            <label for="pauseHours">Pause (Stunden)</label>
+            <input type="number" id="pauseHours" min="0" max="3" step="0.25" value="1">
+          </div>
+          <div>
+            <label for="defaultStart">Standard-Ankunftszeit</label>
+            <input type="time" id="defaultStart" value="02:09">
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btnSaveSettings" style="margin-top:16px;">Einstellungen speichern</button>
+        <p class="hint">Änderungen gelten für neue Berechnungen und die Monatsübersicht.</p>
+      </div>
+
+      <div class="card">
+        <h2><span class="dot" style="background:var(--orange)"></span> Daten</h2>
+        <button class="btn btn-glass" id="btnExport">Daten exportieren (JSON)</button>
+        <button class="btn btn-danger" id="btnClearAll">Alle Einträge löschen</button>
+      </div>
+    </div>
+
+    <footer>
+    
+    </footer>
+  </div>
+
+  <script>
+    // ========== HOLIDAYS (Baden-Württemberg) ==========
+    function easterSunday(year) {
+      const a = year % 19;
+      const b = Math.floor(year / 100);
+      const c = year % 100;
+      const d = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const month = Math.floor((h + l - 7 * m + 114) / 31);
+      const day = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(year, month - 1, day);
+    }
+
+    function addDays(date, days) {
+      const d = new Date(date);
+      d.setDate(d.getDate() + days);
+      return d;
+    }
+
+    function dateKey(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function getBWHolidays(year) {
+      const easter = easterSunday(year);
+      const list = [
+        { date: new Date(year, 0, 1), name: 'Neujahr' },
+        { date: new Date(year, 0, 6), name: 'Heilige Drei Könige' },
+        { date: addDays(easter, -2), name: 'Karfreitag' },
+        { date: addDays(easter, 1), name: 'Ostermontag' },
+        { date: new Date(year, 4, 1), name: 'Tag der Arbeit' },
+        { date: addDays(easter, 39), name: 'Christi Himmelfahrt' },
+        { date: addDays(easter, 50), name: 'Pfingstmontag' },
+        { date: addDays(easter, 60), name: 'Fronleichnam' },
+        { date: new Date(year, 9, 3), name: 'Tag der Deutschen Einheit' },
+        { date: new Date(year, 10, 1), name: 'Allerheiligen' },
+        { date: new Date(year, 11, 25), name: '1. Weihnachtstag' },
+        { date: new Date(year, 11, 26), name: '2. Weihnachtstag' },
+      ];
+      const map = {};
+      list.forEach(h => { map[dateKey(h.date)] = h.name; });
+      return map;
+    }
+
+    // ========== STATE ==========
+    let settings = {
+      targetHours: 8,
+      pauseHours: 1,
+      defaultStart: '02:09'
+    };
+    let entries = {};
+    let viewYear, viewMonth;
+
+    function load() {
+      try {
+        const s = localStorage.getItem('az_settings');
+        if (s) settings = { ...settings, ...JSON.parse(s) };
+        const e = localStorage.getItem('az_entries');
+        if (e) entries = JSON.parse(e);
+      } catch (err) {}
+    }
+
+    function save() {
+      localStorage.setItem('az_settings', JSON.stringify(settings));
+      localStorage.setItem('az_entries', JSON.stringify(entries));
+    }
+
+    // ========== HELPERS ==========
+    function parseTime(str) {
+      if (!str) return null;
+      const [h, m] = str.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    function formatMinutes(mins) {
+      if (mins == null || isNaN(mins)) return '–';
+      const sign = mins < 0 ? '-' : '';
+      const abs = Math.abs(Math.round(mins));
+      const h = Math.floor(abs / 60);
+      const m = abs % 60;
+      return `${sign}${h}:${String(m).padStart(2, '0')}`;
+    }
+
+    function calcWorkMinutes(startStr, endStr) {
+      const start = parseTime(startStr);
+      const end = parseTime(endStr);
+      if (start == null || end == null) return null;
+      let diff = end - start;
+      if (diff < 0) diff += 24 * 60;
+      const pause = settings.pauseHours * 60;
+      return Math.max(0, diff - pause);
+    }
+
+    function isWeekend(d) {
+      const day = d.getDay();
+      return day === 0 || day === 6;
+    }
+
+    function getDayType(d) {
+      const key = dateKey(d);
+      const holidays = getBWHolidays(d.getFullYear());
+      if (holidays[key]) return { type: 'holiday', name: holidays[key] };
+      if (isWeekend(d)) return { type: 'weekend', name: d.getDay() === 0 ? 'Sonntag' : 'Samstag' };
+      return { type: 'work', name: 'Arbeitstag' };
+    }
+
+    function todayKey() {
+      return dateKey(new Date());
+    }
+
+    // ========== UI ==========
+    function updateTodayPanel() {
+      const now = new Date();
+      const key = todayKey();
+      const type = getDayType(now);
+      const statusEl = document.getElementById('today-status');
+
+      let badgeClass = 'badge-work';
+      if (type.type === 'weekend') badgeClass = 'badge-free';
+      if (type.type === 'holiday') badgeClass = 'badge-holiday';
+
+      statusEl.innerHTML = `
+        <div style="font-size:1.15rem;font-weight:650;letter-spacing:-0.02em;">
+          ${now.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}
+        </div>
+        <span class="status-badge ${badgeClass}">${type.name}</span>
+      `;
+
+      const entry = entries[key];
+      if (entry) {
+        document.getElementById('startTime').value = entry.start;
+        document.getElementById('endTime').value = entry.end;
+        showCalc(entry.hours);
+        document.getElementById('todayEntryCard').style.display = 'block';
+        document.getElementById('todayEntry').innerHTML = `
+          <div class="entry-row">
+            <span>Start</span>
+            <strong>${entry.start}</strong>
+          </div>
+          <div class="entry-row">
+            <span>Ende</span>
+            <strong>${entry.end}</strong>
+          </div>
+          <div class="entry-row">
+            <span>Stunden</span>
+            <strong class="plus">${formatMinutes(entry.hours)}</strong>
+          </div>
+        `;
+      } else {
+        document.getElementById('startTime').value = settings.defaultStart;
+        document.getElementById('endTime').value = '';
+        document.getElementById('calcBox').style.display = 'none';
+        document.getElementById('todayEntryCard').style.display = 'none';
+      }
+    }
+
+    function showCalc(mins) {
+      const box = document.getElementById('calcBox');
+      box.style.display = 'block';
+      document.getElementById('calcHours').textContent = formatMinutes(mins);
+      const target = settings.targetHours * 60;
+      const delta = mins - target;
+      const hint = document.getElementById('calcHint');
+      if (delta > 0) {
+        hint.innerHTML = `<span class="plus">+${formatMinutes(delta)}</span> Überstunden heute`;
+      } else if (delta < 0) {
+        hint.innerHTML = `<span class="minus">${formatMinutes(delta)}</span> unter Soll`;
+      } else {
+        hint.textContent = 'Genau Soll erreicht';
+      }
+    }
+
+    function liveCalc() {
+      const start = document.getElementById('startTime').value;
+      const end = document.getElementById('endTime').value;
+      if (!start || !end) {
+        document.getElementById('calcBox').style.display = 'none';
+        document.getElementById('calcHint').textContent = '';
+        return;
+      }
+      showCalc(calcWorkMinutes(start, end));
+    }
+
+    function renderMonth() {
+      const label = document.getElementById('monthLabel');
+      const months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+      label.textContent = `${months[viewMonth]} ${viewYear}`;
+
+      const body = document.getElementById('monthBody');
+      body.innerHTML = '';
+
+      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+      let totalWorked = 0;
+      let totalTarget = 0;
+      const today = todayKey();
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const d = new Date(viewYear, viewMonth, day);
+        const key = dateKey(d);
+        const type = getDayType(d);
+        const entry = entries[key];
+        const isToday = key === today;
+
+        let hoursStr = '–';
+        let startStr = '–';
+        let endStr = '–';
+        let deltaStr = '–';
+        let deltaClass = '';
+        let hours = 0;
+
+        if (entry) {
+          hours = entry.hours;
+          hoursStr = formatMinutes(hours);
+          startStr = entry.start || '–';
+          endStr = entry.end || '–';
+          totalWorked += hours;
+        }
+
+        if (type.type === 'work') {
+          const target = settings.targetHours * 60;
+          totalTarget += target;
+          if (entry) {
+            const delta = hours - target;
+            deltaStr = (delta >= 0 ? '+' : '') + formatMinutes(delta);
+            deltaClass = delta >= 0 ? 'plus' : 'minus';
+          }
+        } else if (entry && entry.hours > 0) {
+          deltaStr = '+' + formatMinutes(entry.hours);
+          deltaClass = 'plus';
+        }
+
+        const tr = document.createElement('tr');
+        if (type.type === 'weekend') tr.classList.add('weekend');
+        if (type.type === 'holiday') tr.classList.add('holiday');
+        if (isToday) tr.classList.add('today');
+
+        const dayName = d.toLocaleDateString('de-DE', { weekday: 'short' });
+        let dayExtra = '';
+        if (type.type === 'holiday') {
+          dayExtra = `<div style="font-size:0.65rem;color:var(--purple);margin-top:1px;">${type.name}</div>`;
+        } else if (type.type === 'weekend') {
+          dayExtra = `<div style="font-size:0.65rem;color:var(--muted);margin-top:1px;">${type.name}</div>`;
+        }
+
+        tr.innerHTML = `
+          <td>
+            <strong>${day}</strong> <span style="color:var(--muted);font-size:0.7rem">${dayName}</span>
+            ${dayExtra}
+          </td>
+          <td style="font-variant-numeric:tabular-nums;font-size:0.82rem">${startStr}</td>
+          <td style="font-variant-numeric:tabular-nums;font-size:0.82rem">${endStr}</td>
+          <td class="hours-cell">${hoursStr}</td>
+          <td class="delta ${deltaClass}">${deltaStr}</td>
+        `;
+        body.appendChild(tr);
+      }
+
+      document.getElementById('sumHours').textContent = formatMinutes(totalWorked);
+      document.getElementById('sumTarget').textContent = formatMinutes(totalTarget);
+      const saldo = totalWorked - totalTarget;
+      const saldoEl = document.getElementById('sumDelta');
+      saldoEl.textContent = (saldo >= 0 ? '+' : '') + formatMinutes(saldo);
+      saldoEl.className = 'num ' + (saldo >= 0 ? 'plus' : 'minus');
+    }
+
+    // ========== EVENTS ==========
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+        if (tab.dataset.tab === 'monat') renderMonth();
+        if (tab.dataset.tab === 'heute') updateTodayPanel();
+      });
+    });
+
+    document.getElementById('btnNow').addEventListener('click', () => {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('endTime').value = `${h}:${m}`;
+      liveCalc();
+    });
+
+    document.getElementById('startTime').addEventListener('change', liveCalc);
+    document.getElementById('endTime').addEventListener('change', liveCalc);
+    document.getElementById('startTime').addEventListener('input', liveCalc);
+    document.getElementById('endTime').addEventListener('input', liveCalc);
+
+    document.getElementById('btnSave').addEventListener('click', () => {
+      const start = document.getElementById('startTime').value;
+      const end = document.getElementById('endTime').value;
+      if (!start || !end) {
+        alert('Bitte Start- und Endzeit angeben.');
+        return;
+      }
+      const mins = calcWorkMinutes(start, end);
+      entries[todayKey()] = { start, end, hours: mins };
+      save();
+      updateTodayPanel();
+      const btn = document.getElementById('btnSave');
+      const old = btn.innerHTML;
+      btn.innerHTML = '✓ Gespeichert';
+      setTimeout(() => btn.innerHTML = old, 1300);
+    });
+
+    document.getElementById('btnDeleteToday').addEventListener('click', () => {
+      if (!confirm('Heutigen Eintrag wirklich löschen?')) return;
+      delete entries[todayKey()];
+      save();
+      updateTodayPanel();
+    });
+
+    document.getElementById('prevMonth').addEventListener('click', () => {
+      viewMonth--;
+      if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+      renderMonth();
+    });
+
+    document.getElementById('nextMonth').addEventListener('click', () => {
+      viewMonth++;
+      if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+      renderMonth();
+    });
+
+    document.getElementById('btnSaveSettings').addEventListener('click', () => {
+      settings.targetHours = parseFloat(document.getElementById('targetHours').value) || 8;
+      settings.pauseHours = parseFloat(document.getElementById('pauseHours').value) || 1;
+      settings.defaultStart = document.getElementById('defaultStart').value || '02:09';
+      save();
+      const btn = document.getElementById('btnSaveSettings');
+      const old = btn.textContent;
+      btn.textContent = '✓ Gespeichert';
+      setTimeout(() => btn.textContent = old, 1300);
+      liveCalc();
+    });
+
+    document.getElementById('btnExport').addEventListener('click', () => {
+      const data = { settings, entries, exported: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `arbeitszeit_${dateKey(new Date())}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('btnClearAll').addEventListener('click', () => {
+      if (!confirm('Wirklich ALLE Einträge unwiderruflich löschen?')) return;
+      entries = {};
+      save();
+      updateTodayPanel();
+      renderMonth();
+    });
+
+    // ========== INIT ==========
+    load();
+    const now = new Date();
+    viewYear = now.getFullYear();
+    viewMonth = now.getMonth();
+
+    document.getElementById('targetHours').value = settings.targetHours;
+    document.getElementById('pauseHours').value = settings.pauseHours;
+    document.getElementById('defaultStart').value = settings.defaultStart;
+
+    updateTodayPanel();
+
+    // Service Worker (Offline)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+
+    // Einmaliger Hinweis: Zum Home-Bildschirm
+    if (!localStorage.getItem('az_homescreen_tip') && !window.navigator.standalone) {
+      setTimeout(() => {
+        const tip = document.createElement('div');
+        tip.id = 'homescreenTip';
+        tip.style.cssText = `
+          position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); left: 14px; right: 14px;
+          max-width: 440px; margin: 0 auto; z-index: 100;
+          background: rgba(15,23,42,0.95); backdrop-filter: blur(20px);
+          border: 1px solid rgba(94,234,212,0.3); border-radius: 18px;
+          padding: 16px; box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        `;
+        tip.innerHTML = `
+          <div style="font-weight:650;margin-bottom:6px;font-size:0.95rem;">Zum Home-Bildschirm</div>
+          <div style="font-size:0.82rem;color:#94a3b8;line-height:1.4;margin-bottom:12px;">
+            Safari → Teilen-Symbol → <strong style="color:#f0f4ff">„Zum Home-Bildschirm“</strong><br>
+            Dann öffnet sich die App wie eine echte App (Vollbild, eigenes Icon).
+          </div>
+          <button id="tipClose" style="
+            width:100%;padding:12px;border:none;border-radius:12px;
+            background:linear-gradient(135deg,#5eead4,#38bdf8);color:#0a0f1e;
+            font-weight:600;font-size:0.95rem;cursor:pointer;
+          ">Verstanden</button>
+        `;
+        document.body.appendChild(tip);
+        document.getElementById('tipClose').onclick = () => {
+          localStorage.setItem('az_homescreen_tip', '1');
+          tip.remove();
+        };
+      }, 1800);
+    }
+  </script>
+</body>
+</html>
